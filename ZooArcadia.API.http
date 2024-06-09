@@ -1,0 +1,6 @@
+@ZooArcadia.API_HostAddress = http://localhost:5261
+
+GET {{ZooArcadia.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
