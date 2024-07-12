@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ZooArcadia.API.Models.DbModels
 {
@@ -11,7 +12,7 @@ namespace ZooArcadia.API.Models.DbModels
         public int quantity { get; set; }
         public string foodtype { get; set; }
         public string status { get; set; }
-        public int animalid { get; set; }
-        public ICollection<Animal>? animal { get; set; }
+
+        public Animal animal { get; set; }
     }
 }
