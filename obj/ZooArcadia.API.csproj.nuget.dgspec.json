@@ -66,10 +66,6 @@
               "target": "Package",
               "version": "[8.0.7, )"
             },
-            "Microsoft.IdentityModel.Tokens": {
-              "target": "Package",
-              "version": "[7.6.3, )"
-            },
             "MongoDB.Driver": {
               "target": "Package",
               "version": "[2.26.0, )"

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using ZooArcadia.API.Services;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -62,6 +63,7 @@ public class HabitatsController : ControllerBase
         return habitat;
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPost]
     public async Task<ActionResult<Habitat>> PostHabitat(HabitatWithImage habitatWithImage)
     {
@@ -99,6 +101,7 @@ public class HabitatsController : ControllerBase
         return CreatedAtAction(nameof(GetHabitat), new { id = habitat.habitatid }, habitat);
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPut("{id}")]
     public async Task<IActionResult> PutHabitat(int id, Habitat habitat)
     {
@@ -133,6 +136,7 @@ public class HabitatsController : ControllerBase
         return _context.habitat.Any(e => e.habitatid == id);
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteHabitat(int id)
     {
@@ -146,7 +150,6 @@ public class HabitatsController : ControllerBase
             return NotFound();
         }
 
-        // Remove habitat image relations and images
         foreach (var relation in habitat.habitatimagerelation.ToList())
         {
             var image = await _context.image.FindAsync(relation.imageid);

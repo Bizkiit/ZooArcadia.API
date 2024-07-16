@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZooArcadia.API.Models.DbModels;
 
@@ -35,6 +36,7 @@ public class RapportVeterinairesController : ControllerBase
     }
 
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPost]
     public async Task<ActionResult<RapportVeterinaire>> AddRapportVeterinaire(RapportVeterinaire rapportVeterinaire)
     {
@@ -60,6 +62,7 @@ public class RapportVeterinairesController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPut("UpdateHabitatComment")]
     public async Task<IActionResult> UpdateHabitatComment(Habitat updatedHabitat)
     {

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZooArcadia.API.Models.DbModels;
 
@@ -19,6 +20,7 @@ public class AvisController : ControllerBase
         return await _context.avis.ToListAsync();
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPut]
     public async Task<IActionResult> UpdateAvisVisibility([FromBody] Avis updateAvis)
     {
@@ -32,6 +34,16 @@ public class AvisController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<Avis>> PostAvis(Avis newAvis)
+    {
+        newAvis.isvisible = false;
+        _context.avis.Add(newAvis);
+        await _context.SaveChangesAsync();
+
+        return CreatedAtAction(nameof(GetAvis), new { id = newAvis.avisid }, newAvis);
     }
 
 }

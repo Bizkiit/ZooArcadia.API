@@ -25,7 +25,7 @@ public class UsersController : ControllerBase
     /// Gets the users.
     /// </summary>
     /// <returns></returns>
-    [Authorize(Roles = "Administrateur")]
+    [Authorize(Policy = "AdminPolicy")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<object>>> GetUsers()
     {
@@ -52,7 +52,7 @@ public class UsersController : ControllerBase
     }
 
 
-    [Authorize(Roles = "Administrateur")]
+    [Authorize(Policy = "AdminPolicy")]
     [HttpPost]
     public async Task<ActionResult<UserZoo>> PostUser(UsersWithRole userZoo)
     {
@@ -97,7 +97,7 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetUsers), new { id = user.username }, user);
     }
 
-    [Authorize(Roles = "Administrateur")]
+    [Authorize(Policy = "AdminPolicy")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(string id)
     {

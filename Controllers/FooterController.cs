@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZooArcadia.API.Models.DbModels;
 
@@ -24,6 +25,7 @@ public class FooterController : ControllerBase
         return Ok(footer);
     }
 
+    [Authorize(Policy = "AdminPolicy")]
     [HttpPost]
     public async Task<ActionResult<Footer>> UpdateFooter(Footer footer)
     {

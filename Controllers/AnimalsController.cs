@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Driver;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -50,7 +51,7 @@ public class AnimalsController : ControllerBase
     {
         try
         {
-            var animal = await _context.animal
+            Animal? animal = await _context.animal
                 .Include(a => a.race)
                 .Include(a => a.habitat)
                 .Include(a => a.animalimagerelation)
@@ -74,7 +75,7 @@ public class AnimalsController : ControllerBase
     [HttpGet("GetAnimalsByHabitat/{habitatid}")]
     public IActionResult GetAnimalsByHabitat(int habitatid)
     {
-        var animals = _context.animal
+        List<Animal> animals = _context.animal
                               .Include(a => a.race)
                               .Include(a => a.habitat)
                               .Include(a => a.animalimagerelation)
@@ -86,7 +87,7 @@ public class AnimalsController : ControllerBase
     }
 
 
-
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPost]
     public async Task<ActionResult<Animal>> AddAnimal(AnimalWithImage animalWithImage)
     {
@@ -227,6 +228,7 @@ public class AnimalsController : ControllerBase
     }
 
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAnimal(int id)
     {

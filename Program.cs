@@ -6,6 +6,7 @@ using Microsoft.OpenApi.Models;
 using MongoDB.Driver;
 using System.Security.Claims;
 using System.Text;
+using ZooArcadia.API.Models.DbModels;
 using ZooArcadia.API.Services;
 using ZooArcadia.API.Settings;
 
@@ -21,6 +22,7 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddSingleton<JwtKeyService>();
 
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews()
@@ -72,25 +74,22 @@ builder.Services.AddScoped<AnimalService>();
 builder.Services.AddScoped<ImageService>();
 
 var JWTSetting = builder.Configuration.GetSection("Jwt");
-builder.Services.AddAuthentication(opt =>
-{
-    opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    opt.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-})
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+
     .AddJwtBearer(options =>
     {
-        options.RequireHttpsMetadata = false;
-        options.SaveToken = true;
+        var sp = builder.Services.BuildServiceProvider();
+        var jwtKeyService = sp.GetRequiredService<JwtKeyService>();
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
+            IssuerSigningKey = jwtKeyService.Key,
+            ValidateIssuer = true,
             ValidIssuer = JWTSetting["Issuer"],
+            ValidateAudience = true,
             ValidAudience = JWTSetting["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(JWTSetting.GetSection("key").Value!))
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(5)
         };
 
         options.Events = new JwtBearerEvents
@@ -98,16 +97,17 @@ builder.Services.AddAuthentication(opt =>
             OnAuthenticationFailed = context =>
             {
                 var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                logger.LogError("Authentication failed: " + context.Exception.Message);
-                logger.LogError("Token: " + context.Request.Headers["Authorization"].ToString());
+                logger.LogError($"Échec de l'authentification : {context.Exception.Message}");
+                if (context.Exception is SecurityTokenExpiredException expiredException)
+                {
+                    logger.LogError($"Token expiré le : {expiredException.Expires}");
+                }
                 return Task.CompletedTask;
             },
             OnTokenValidated = context =>
             {
-                var claimsIdentity = context.Principal.Identity as ClaimsIdentity;
-                var roleClaim = claimsIdentity?.FindFirst(ClaimTypes.Role)?.Value;
                 var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                logger.LogInformation($"Token validated for role: {roleClaim}");
+                logger.LogInformation("Token validé avec succès");
                 return Task.CompletedTask;
             },
             OnChallenge = context =>
@@ -122,9 +122,8 @@ builder.Services.AddAuthentication(opt =>
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Administrateur", policy => policy.RequireRole("Administrateur"));
-    options.AddPolicy("Veterinaire", policy => policy.RequireRole("Veterinaire"));
-    options.AddPolicy("Employé", policy => policy.RequireRole("Employé"));
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Administrateur"));
+    options.AddPolicy("MultipleRolesPolicy", policy => policy.RequireRole("Administrateur", "Veterinaire", "Employé"));
 });
 
 builder.Services.AddScoped<JwtTokenService>();
@@ -140,8 +139,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigin");
-app.UseAuthentication();
 app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
