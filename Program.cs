@@ -12,11 +12,10 @@ using ZooArcadia.API.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("http://localhost:4200")
+        builder => builder.WithOrigins("http://localhost:4200", "https://zooarcadia.ovh")
                           .AllowAnyHeader()
                           .AllowAnyMethod());
 });
@@ -29,13 +28,14 @@ builder.Services.AddControllersWithViews()
     .AddNewtonsoftJson(options =>
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
 );
+
 builder.Services.AddDbContext<ZooArcadiaDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ZooArcadia.API", Version = "v1" });
-    // Adding JWT authentication to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \\\"Authorization: Bearer {token}\\",
@@ -75,10 +75,10 @@ builder.Services.AddScoped<ImageService>();
 
 var JWTSetting = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-
     .AddJwtBearer(options =>
     {
         var sp = builder.Services.BuildServiceProvider();
+        var logger = sp.GetRequiredService<ILogger<Program>>();
         var jwtKeyService = sp.GetRequiredService<JwtKeyService>();
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -96,7 +96,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnAuthenticationFailed = context =>
             {
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
                 logger.LogError($"Échec de l'authentification : {context.Exception.Message}");
                 if (context.Exception is SecurityTokenExpiredException expiredException)
                 {
@@ -106,13 +105,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             },
             OnTokenValidated = context =>
             {
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
                 logger.LogInformation("Token validé avec succès");
                 return Task.CompletedTask;
             },
             OnChallenge = context =>
             {
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
                 logger.LogWarning("Token validation failed: " + context.Error);
                 logger.LogWarning("Token validation error description: " + context.ErrorDescription);
                 return Task.CompletedTask;
@@ -133,6 +130,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ZooArcadia.API v1"));
+}
+else
+{
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ZooArcadia.API v1"));
 }

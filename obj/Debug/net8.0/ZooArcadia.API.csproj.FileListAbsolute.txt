@@ -63,3 +63,4 @@ C:\Users\valentin.chartier\source\repos\ZooArcadia.API\obj\Debug\net8.0\refint\Z
 C:\Users\valentin.chartier\source\repos\ZooArcadia.API\obj\Debug\net8.0\ZooArcadia.API.pdb
 C:\Users\valentin.chartier\source\repos\ZooArcadia.API\obj\Debug\net8.0\ZooArcadia.API.genruntimeconfig.cache
 C:\Users\valentin.chartier\source\repos\ZooArcadia.API\obj\Debug\net8.0\ref\ZooArcadia.API.dll
+C:\Users\valentin.chartier\source\repos\ZooArcadia.API\bin\Debug\net8.0\appsettings.Production.json
