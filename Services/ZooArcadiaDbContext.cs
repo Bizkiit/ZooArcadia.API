@@ -20,6 +20,7 @@ public class ZooArcadiaDbContext : DbContext
     public DbSet<HabitatImageRelation> habitatimagerelation { get; set; }
     public DbSet<AnimalImageRelation> animalimagerelation { get; set; }
     public DbSet<AnimalFeeding> animalfeeding { get; set; }
+    public DbSet<Footer> footer { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<HabitatImageRelation>()
@@ -42,6 +43,7 @@ public class ZooArcadiaDbContext : DbContext
             .HasOne(af => af.animal)
             .WithMany(a => a.animalfeeding)
             .HasForeignKey(af => af.animalid);
+
     }
 
 

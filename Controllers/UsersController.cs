@@ -4,23 +4,36 @@ using ZooArcadia.API.Models;
 using ZooArcadia.API.Models.QueryModels;
 using Microsoft.Extensions.Logging;
 using ZooArcadia.API.Models.DbModels;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
 public class UsersController : ControllerBase
 {
     private readonly ZooArcadiaDbContext _context;
-    private readonly ILogger<AuthenticationController> _logger;
+    private readonly ILogger<UsersController> _logger;
+    private readonly EmailService _emailService;
 
-    public UsersController(ZooArcadiaDbContext context, ILogger<AuthenticationController> logger)
+    public UsersController(ZooArcadiaDbContext context, ILogger<UsersController> logger, EmailService emailService)
     {
         _context = context;
         _logger = logger;
+        _emailService = emailService;
     }
 
+    /// <summary>
+    /// Gets the users.
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Policy = "AdminPolicy")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<object>>> GetUsers()
     {
+        _logger.LogInformation("GetUsers endpoint called");
+
+        var authHeader = Request.Headers["Authorization"].ToString();
+        _logger.LogInformation($"Authorization header received: {authHeader}");
+
         var users = await _context.userzoo
                                   .Join(_context.role,
                                         user => user.username,
@@ -38,16 +51,24 @@ public class UsersController : ControllerBase
         return Ok(users);
     }
 
+
+    [Authorize(Policy = "AdminPolicy")]
     [HttpPost]
     public async Task<ActionResult<UserZoo>> PostUser(UsersWithRole userZoo)
     {
+        if (await _context.userzoo.AnyAsync(u => u.username == userZoo.username))
+        {
+            return BadRequest(new { Message = "Username already exists." });
+        }
+
         var user = new UserZoo
         {
             username = userZoo.username,
-            password = userZoo.password,
             lastname = userZoo.lastname,
             firstname = userZoo.firstname
         };
+
+        user.SetPassword(userZoo.password);
 
         _context.userzoo.Add(user);
         await _context.SaveChangesAsync();
@@ -61,12 +82,22 @@ public class UsersController : ControllerBase
         _context.role.Add(role);
         await _context.SaveChangesAsync();
 
-        // Envoi de l'email avec le username
-        // TODO: Ajoutez la logique d'envoi d'email ici
+        // Envoi de l'email avec le username et le mot de passe
+        var subject = "Bienvenue dans l'équipe Zoo Arcadia";
+        var body = $"<p>Bonjour {user.firstname} {user.lastname},</p>" +
+                   $"<p>Votre compte a été créé avec succès. Voici vos informations de connexion :</p>" +
+                   $"<p>Nom d'utilisateur : {user.username}</p>" +
+                   $"<p>Rapprochez vous de votre administrateur pour récuperer votre mot de passe</p>" +
+                   "<p>Merci de faire partie de Zoo Arcadia !</p>";
+
+        _emailService.SendEmail(user.username, subject, body);
+
+        _logger.LogInformation("User created: {Username}", user.username);
 
         return CreatedAtAction(nameof(GetUsers), new { id = user.username }, user);
     }
 
+    [Authorize(Policy = "AdminPolicy")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteUser(string id)
     {
@@ -86,8 +117,8 @@ public class UsersController : ControllerBase
             await _context.SaveChangesAsync();
         }
 
+        _logger.LogInformation("User deleted: {username}", id);
+
         return NoContent();
     }
-
 }
-

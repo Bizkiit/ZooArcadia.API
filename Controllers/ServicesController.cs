@@ -4,6 +4,7 @@ using ZooArcadia.API.Models;
 using ZooArcadia.API.Models.QueryModels;
 using Microsoft.Extensions.Logging;
 using ZooArcadia.API.Models.DbModels;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -24,6 +25,7 @@ public class ServicesController : ControllerBase
         return await _context.service.ToListAsync();
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPost]
     public async Task<ActionResult<Service>> PostService(Service service)
     {
@@ -33,6 +35,7 @@ public class ServicesController : ControllerBase
         return CreatedAtAction(nameof(GetServices), new { id = service.serviceid }, service);
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPut("{id}")]
     public async Task<IActionResult> PutService(int id, Service service)
     {
@@ -62,6 +65,7 @@ public class ServicesController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteService(int id)
     {

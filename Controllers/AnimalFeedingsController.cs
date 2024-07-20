@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZooArcadia.API.Models.DbModels;
 
@@ -42,6 +43,7 @@ public class AnimalFeedingsController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPost]
     public async Task<ActionResult> AddAnimalFeeding(AnimalFeeding feeding)
     {

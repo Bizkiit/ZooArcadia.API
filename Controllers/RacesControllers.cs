@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ZooArcadia.API.Models.DbModels;
 
@@ -30,6 +31,7 @@ public class RacesController : ControllerBase
         }
     }
 
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPost("AddRace")]
     public async Task<IActionResult> AddRace(Race newRace)
     {

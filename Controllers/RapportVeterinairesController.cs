@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ZooArcadia.API.Models.DbModels;
 
 [Route("api/[controller]")]
@@ -14,21 +16,42 @@ public class RapportVeterinairesController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<RapportVeterinaire>>> GetRapportsVeterinaires()
+    {
+        try
+        {
+            var rapports = await _context.rapportveterinaire
+                .Include(r => r.animal)
+                .Include(r => r.animal.race)
+                .ToListAsync();
+
+            return Ok(rapports);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching veterinary reports");
+            return BadRequest(ex.ToString());
+        }
+    }
+
+
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPost]
     public async Task<ActionResult<RapportVeterinaire>> AddRapportVeterinaire(RapportVeterinaire rapportVeterinaire)
     {
         try
         {
+            var animal = await _context.animal.FindAsync(rapportVeterinaire.animal.animalid);
+            if (animal == null)
+            {
+                return BadRequest(new { errors = new { animal = new[] { "Animal not found." } } });
+            }
+
+            rapportVeterinaire.animal = animal;
+
             _context.rapportveterinaire.Add(rapportVeterinaire);
             await _context.SaveChangesAsync();
-
-            var animal = await _context.animal.FindAsync(rapportVeterinaire.animalid);
-            if (animal != null)
-            {
-                animal.rapportveterinaireid = rapportVeterinaire.rapportveterinaireid;
-                _context.animal.Update(animal);
-                await _context.SaveChangesAsync();
-            }
 
             return Ok(rapportVeterinaire);
         }
@@ -39,7 +62,7 @@ public class RapportVeterinairesController : ControllerBase
         }
     }
 
-    // Nouvel endpoint pour mettre à jour l'état des habitats
+    [Authorize(Policy = "MultipleRolesPolicy")]
     [HttpPut("UpdateHabitatComment")]
     public async Task<IActionResult> UpdateHabitatComment(Habitat updatedHabitat)
     {

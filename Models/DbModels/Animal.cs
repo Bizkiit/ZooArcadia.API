@@ -16,6 +16,6 @@ namespace ZooArcadia.API.Models.DbModels
         public Habitat? habitat { get; set; }
         public ICollection<RapportVeterinaire>? rapportveterinaire { get; set; }
         public ICollection<AnimalImageRelation>? animalimagerelation { get; set; }
-        public ICollection<AnimalFeeding> animalfeeding { get; set; }
+        public ICollection<AnimalFeeding>? animalfeeding { get; set; }
     }
 }
