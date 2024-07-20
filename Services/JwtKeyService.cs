@@ -9,6 +9,7 @@ namespace ZooArcadia.API.Services
 
         public JwtKeyService(IConfiguration configuration, ILogger<JwtKeyService> logger)
         {
+            var JWTSetting = configuration.GetSection("Jwt");
             var key = configuration["Jwt:Key"];
             if (string.IsNullOrEmpty(key))
             {

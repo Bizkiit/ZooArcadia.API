@@ -15,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins("http://localhost:4200", "https://zooarcadia.ovh")
+        builder => builder.WithOrigins("http://localhost:4200", "https://www.zooarcadia.ovh", "https://zooarcadia.ovh", "http://localhost")
                           .AllowAnyHeader()
                           .AllowAnyMethod());
 });
@@ -131,7 +131,11 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "ZooArcadia.API v1"));
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "ZooArcadia.API v1");
+        c.RoutePrefix = string.Empty;
+    });
 }
 else
 {

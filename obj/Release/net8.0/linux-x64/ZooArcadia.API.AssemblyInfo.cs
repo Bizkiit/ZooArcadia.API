@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ZooArcadia.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+37331a18aa328090899eb3eb6e4a87f0914e1c05")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5de7b064a898c4c9bad86094ecfc8d1f8da30621")]
 [assembly: System.Reflection.AssemblyProductAttribute("ZooArcadia.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ZooArcadia.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
