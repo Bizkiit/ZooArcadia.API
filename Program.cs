@@ -120,7 +120,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Administrateur"));
-    options.AddPolicy("MultipleRolesPolicy", policy => policy.RequireRole("Administrateur", "Veterinaire", "Employé"));
+    options.AddPolicy("MultipleRolesPolicy", policy => policy.RequireRole("Administrateur", "Véterinaire", "Employé"));
 });
 
 builder.Services.AddScoped<JwtTokenService>();
